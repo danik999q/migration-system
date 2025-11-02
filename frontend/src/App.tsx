@@ -139,52 +139,24 @@ const App: React.FC = () => {
             <div className="header-nav">
               <button
                 onClick={() => setCurrentPage('people')}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  background: currentPage === 'people' 
-                    ? 'rgba(255, 255, 255, 0.3)' 
-                    : 'rgba(255, 255, 255, 0.1)',
-                  color: 'white',
-                  transition: 'all 0.2s',
-                }}
+                className={`header-nav-button${
+                  currentPage === 'people' ? ' active' : ''
+                }`}
               >
                 Люди
               </button>
               {isAdmin && (
                 <button
                   onClick={() => setCurrentPage('users')}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    background: currentPage === 'users' 
-                      ? 'rgba(255, 255, 255, 0.3)' 
-                      : 'rgba(255, 255, 255, 0.1)',
-                    color: 'white',
-                    transition: 'all 0.2s',
-                  }}
+                  className={`header-nav-button${
+                    currentPage === 'users' ? ' active' : ''
+                  }`}
                 >
                   Пользователи
                 </button>
               )}
             </div>
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleLogout}
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-              }}
-            >
+            <button className="btn logout-button" onClick={handleLogout}>
               Выйти
             </button>
           </div>
@@ -195,32 +167,22 @@ const App: React.FC = () => {
         <UsersManagement />
       ) : (
         <div className="container">
-          <div className="search-and-create" style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '32px',
-            gap: '16px',
-            flexWrap: 'wrap',
-          }}>
-            <div className="search-bar" style={{ flex: 1, minWidth: '300px' }}>
+          <div className="search-and-create">
+            <div className="search-bar">
               <input
+                className="search-input"
                 type="text"
                 placeholder="🔍 Поиск по имени, фамилии, паспорту или email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button 
-              className="btn btn-primary" 
-              onClick={handleCreatePerson}
-              style={{
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ fontSize: '18px', marginRight: '8px' }}>+</span>
-              Создать человека
-            </button>
+            <div className="search-actions">
+              <button className="btn create-person-button" onClick={handleCreatePerson}>
+                <span className="create-person-icon">+</span>
+                Создать человека
+              </button>
+            </div>
           </div>
 
         {loading ? (
