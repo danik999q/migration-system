@@ -1,0 +1,253 @@
+﻿import React, { useState, useEffect } from 'react';
+import { api, Person } from './services/api';
+import { authService } from './services/auth';
+import PersonCard from './components/PersonCard';
+import PersonModal from './components/PersonModal';
+import Login from './components/Login';
+import UsersManagement from './components/UsersManagement';
+import './index.css';
+
+const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [filteredPeople, setFilteredPeople] = useState<Person[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<'people' | 'users'>('people');
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = authService.isAuthenticated();
+      const admin = authService.isAdmin();
+      setIsAuthenticated(authenticated);
+      setIsAdmin(admin);
+      setCheckingAuth(false);
+      if (authenticated) {
+        loadPeople();
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setIsAdmin(authService.isAdmin());
+    loadPeople();
+  };
+
+  const handleLogout = () => {
+    authService.removeToken();
+    setIsAuthenticated(false);
+    setPeople([]);
+    setFilteredPeople([]);
+  };
+
+  useEffect(() => {
+    const filtered = people.filter(
+      (person) =>
+        person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        person.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        person.passportNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        person.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredPeople(filtered);
+  }, [searchTerm, people]);
+
+  const loadPeople = async () => {
+    try {
+      setLoading(true);
+      const data = await api.people.getAll();
+      setPeople(data);
+      setFilteredPeople(data);
+    } catch (error) {
+      console.error('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р»СЋРґРµР№:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreatePerson = () => {
+    setSelectedPerson(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditPerson = (person: Person) => {
+    setSelectedPerson(person);
+    setIsModalOpen(true);
+  };
+
+  const handleSavePerson = async (personData: Omit<Person, 'id' | 'createdAt' | 'updatedAt'> | Person) => {
+    try {
+      if (selectedPerson) {
+        await api.people.update(selectedPerson.id, personData as Partial<Person>);
+      } else {
+        await api.people.create(personData as Omit<Person, 'id' | 'createdAt' | 'updatedAt'>);
+      }
+      setIsModalOpen(false);
+      setSelectedPerson(null);
+      await loadPeople();
+    } catch (error) {
+      console.error('РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ:', error);
+      alert('РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…');
+    }
+  };
+
+  const handleDeletePerson = async (id: string) => {
+    if (window.confirm('Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ СЌС‚РѕРіРѕ С‡РµР»РѕРІРµРєР°?')) {
+      try {
+        await api.people.delete(id);
+        await loadPeople();
+      } catch (error) {
+        console.error('РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ:', error);
+        alert('РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ');
+      }
+    }
+  };
+
+  const handleStatusChange = async (personId: string, newStatus: string) => {
+    try {
+      await api.status.update(personId, newStatus);
+      await loadPeople();
+    } catch (error) {
+      console.error('РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚Р°С‚СѓСЃР°:', error);
+      alert('РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚Р°С‚СѓСЃР°');
+    }
+  };
+
+  if (checkingAuth) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div>Р—Р°РіСЂСѓР·РєР°...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return (
+    <div>
+      <div className="header">
+        <div className="container">
+          <h1 style={{ margin: 0, fontSize: '28px', letterSpacing: '-0.5px' }}>РЎРёСЃС‚РµРјР° СѓРїСЂР°РІР»РµРЅРёСЏ РјРёРіСЂР°РЅС‚Р°РјРё</h1>
+          <div className="header-actions">
+            <div className="header-nav">
+              <button
+                onClick={() => setCurrentPage('people')}
+                className={`header-nav-button${
+                  currentPage === 'people' ? ' active' : ''
+                }`}
+              >
+                Р›СЋРґРё
+              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setCurrentPage('users')}
+                  className={`header-nav-button${
+                    currentPage === 'users' ? ' active' : ''
+                  }`}
+                >
+                  РџРѕР»СЊР·РѕРІР°С‚РµР»Рё
+                </button>
+              )}
+            </div>
+            <button className="btn logout-button" onClick={handleLogout}>
+              Р’С‹Р№С‚Рё
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {currentPage === 'users' ? (
+        <UsersManagement />
+      ) : (
+        <div className="container">
+          <div className="search-and-create">
+            <div className="search-bar">
+              <input
+                className="search-input"
+                type="text"
+                placeholder="рџ”Ќ РџРѕРёСЃРє РїРѕ РёРјРµРЅРё, С„Р°РјРёР»РёРё, РїР°СЃРїРѕСЂС‚Сѓ РёР»Рё email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="search-actions">
+              <button className="btn create-person-button" onClick={handleCreatePerson}>
+                <span className="create-person-icon">+</span>
+                РЎРѕР·РґР°С‚СЊ С‡РµР»РѕРІРµРєР°
+              </button>
+            </div>
+          </div>
+
+        {loading ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '80px 40px',
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>вЏі</div>
+            <div style={{ fontSize: '18px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…...</div>
+            <div style={{ fontSize: '14px', color: '#6b7280' }}>РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРґРѕР¶РґРёС‚Рµ</div>
+          </div>
+        ) : filteredPeople.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '80px 40px',
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px' }}>{searchTerm ? 'рџ”Ќ' : 'рџ‘¤'}</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>
+              {searchTerm ? 'РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ' : 'РЎРїРёСЃРѕРє РїСѓСЃС‚'}
+            </div>
+            <div style={{ fontSize: '15px', color: '#6b7280', marginBottom: '24px' }}>
+              {searchTerm ? 'РџРѕРїСЂРѕР±СѓР№С‚Рµ РёР·РјРµРЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РїРѕРёСЃРєР°' : 'РЎРѕР·РґР°Р№С‚Рµ РїРµСЂРІРѕРіРѕ С‡РµР»РѕРІРµРєР°, С‡С‚РѕР±С‹ РЅР°С‡Р°С‚СЊ СЂР°Р±РѕС‚Сѓ'}
+            </div>
+            {!searchTerm && (
+              <button className="btn btn-primary" onClick={handleCreatePerson}>
+                <span style={{ fontSize: '18px', marginRight: '8px' }}>+</span>
+                РЎРѕР·РґР°С‚СЊ РїРµСЂРІРѕРіРѕ С‡РµР»РѕРІРµРєР°
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid">
+            {filteredPeople.map((person) => (
+              <PersonCard
+                key={person.id}
+                person={person}
+                onEdit={handleEditPerson}
+                onDelete={handleDeletePerson}
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+          </div>
+        )}
+
+          {isModalOpen && (
+            <PersonModal
+              person={selectedPerson}
+              onClose={() => {
+                setIsModalOpen(false);
+                setSelectedPerson(null);
+              }}
+              onSave={handleSavePerson}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default App;
+

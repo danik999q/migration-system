@@ -1,0 +1,223 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.18), transparent 55%);
+  pointer-events: none;
+  filter: blur(42px);
+}
+
+.login-card {
+  background: var(--bg-surface);
+  border-radius: 24px;
+  padding: 48px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s ease-out;
+  backdrop-filter: blur(24px);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.login-card .form-group {
+  margin-bottom: 24px;
+}
+
+.login-card .form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.login-card .form-group input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--text-primary);
+}
+
+.login-card .form-group input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+}
+
+.login-card .form-group input:disabled {
+  background-color: rgba(148, 163, 184, 0.15);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.login-card .btn-primary {
+  width: 100%;
+  padding: 16px;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.08);
+}
+
+.login-footer {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--primary-500);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.link-button:hover {
+  color: var(--primary-600);
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.link-button:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  background: none;
+}
+
+body[data-theme='dark'] .login-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(99, 102, 241, 0.28);
+}
+
+body[data-theme='dark'] .login-card h2 {
+  color: #e2e8f0;
+}
+
+body[data-theme='dark'] .login-card .form-group input {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #e2e8f0;
+}
+
+body[data-theme='dark'] .login-card .form-group input:disabled {
+  background-color: rgba(51, 65, 85, 0.6);
+}
+
+body[data-theme='dark'] .error-message {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fecaca;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 32px 24px;
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .login-card h2 {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+
+  .login-card .form-group {
+    margin-bottom: 20px;
+  }
+
+  .login-card .form-group input {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  .login-card h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .login-card .form-group {
+    margin-bottom: 16px;
+  }
+
+  .login-card .form-group input {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .login-card .btn-primary {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .error-message {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+}
+
